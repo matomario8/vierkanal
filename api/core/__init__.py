@@ -3,10 +3,11 @@ from markupsafe import escape
 import yaml
 import json
 
-from .dbengine import DBConnection
+from .dbengine import DatabaseUtils
 from .modelfactory import create_model_object, TABLES
 
 allowed_origins = None
+db_utils = None
 
 def _create_response_object(data):
     response = jsonify(data)
@@ -17,11 +18,13 @@ def create_app():
 
     app = Flask("core")
 
-    dbcon = DBConnection("sqlite://")
-    dbcon.init_tables()
+    with open("./config.yml", "r") as config_file:
+        config = yaml.safe_load(config_file)
 
-    with open("./config.yml", "r") as ymlfile:
-        config = yaml.safe_load(ymlfile)
+    db_utils = DatabaseUtils(config["database"]["host"])
+    db_utils.init_tables()
+
+    
 
     allowed_origins = config["api"]["allowed_origins"]
 
@@ -38,7 +41,7 @@ def create_app():
         board = create_model_object("BOARD")
         board.board_name = board_name
 
-        result = dbcon.insert(board)
+        result = db_utils.add(board)
         if result["result"] == True:
             result["status_code"] = 200
         else:

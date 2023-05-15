@@ -3,18 +3,18 @@ from sqlalchemy.orm import Session
 
 from .models import *
 
-class DBConnection:
+class DatabaseUtils:
 
     engine: Engine
 
     def __init__(self, dbhost: str):
         self.engine = create_engine(dbhost, echo=True)
 
-    def init_tables(self):
-        Base.metadata.create_all(self.engine)
+    def init_tables(self, Model=Base):
+        Model.metadata.create_all(self.engine)
     
-    def insert(self, item: Base) -> bool:
-        """Inserts the Base object to the db"""
+    def add(self, item: Base) -> bool:
+        """Adds the Base object to the db"""
         result = False
         msg = "Unable to get database session."
         with Session(self.engine) as session:
@@ -22,9 +22,9 @@ class DBConnection:
                 session.add(item)
                 session.commit()
                 result = True
-                msg = "Successfully inserted item into the database."
+                msg = "Successfully added item into the database."
             except:
-                msg = "Could not insert the item to the database."
+                msg = "Could not add the item to the database."
             
         return { "result": result, "msg": msg }
 

@@ -1,6 +1,6 @@
 from .dbengine import *
 
-"""Abstraction that can be used from the api routes to call database functions"""
+"""API route handler to call database functions"""
 
 def get_item():
     pass
