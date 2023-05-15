@@ -1,0 +1,6 @@
+pytest
+flask
+sqlalchemy
+pyyaml
+markupsafe
+
