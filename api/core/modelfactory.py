@@ -1,32 +1,27 @@
 from .models import *
 
-class Tables:
-    pass
+TABLES = {
+    "BOARD": Board,
+    "THREAD": Thread,
+    "REPLY": Reply,
+    "POSTIDTRACKER": PostIdTracker
+}
 
-TABLES = Tables()
-TABLES.BOARD = "BOARD"
-TABLES.THREAD = "THREAD"
-TABLES.REPLY = "REPLY"
-TABLES.POSTIDTRACKER = "POSTIDTRACKER"
+class ModelFactory:
 
-TABLES_LIST = [TABLES.BOARD, TABLES.THREAD, TABLES.REPLY, TABLES.POSTIDTRACKER]
+    tables: dict
 
-def create_model_object(table_name: Base):
-    if table_name not in TABLES_LIST:
-        raise ValueError("Table name {} not recognized.".format(table_name))
-    
-    model_object = None
+    def __init__(self, *args, **kwargs):
+        if "tables_config" not in kwargs:
+            self.tables = TABLES
+        else:
+            self.tables = kwargs["tables_config"]
 
-    if table_name == TABLES.BOARD:
-        model_object = Board()
-    elif table_name == TABLES.THREAD:
-        model_object = Thread()
-    elif table_name == TABLES.REPLY:
-        model_object = Reply()
-    elif table_name == TABLES.POSTIDTRACKER:
-        model_object = PostIdTracker()
-    else:
-        raise ValueError("Table name {} was recognized, but a handler \
-                         doesn't exist for it.".format(table_name))
-    
-    return model_object
+    def create_model_object(self, table_name):
+        if table_name not in self.tables.keys():
+            raise ValueError("Table name {} not recognized.".format(table_name))
+        
+        model_class = self.tables[table_name]
+        model_object = model_class()
+        
+        return model_object

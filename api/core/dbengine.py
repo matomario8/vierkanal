@@ -13,13 +13,13 @@ class DatabaseUtils:
     def init_tables(self, Model=Base):
         Model.metadata.create_all(self.engine)
     
-    def add(self, item: Base) -> bool:
+    def add(self, model_object: Base) -> bool:
         """Adds the Base object to the db"""
         result = False
         msg = "Unable to get database session."
         with Session(self.engine) as session:
             try:
-                session.add(item)
+                session.add(model_object)
                 session.commit()
                 result = True
                 msg = "Successfully added item into the database."
@@ -28,10 +28,10 @@ class DatabaseUtils:
             
         return { "result": result, "msg": msg }
 
-    def select(self, model, where=None):
+    def get(self, model, where=None):
+
         with Session(self.engine) as session:
-            stmt = select(model)
-            for item in session.scalars(stmt):
-                print(item)
+            stmt = select(model).where(where)
+            return session.scalars(stmt)
             
 

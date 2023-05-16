@@ -1,9 +1,12 @@
 import pytest
 from core.api_handler import *
-from core.modelfactory import create_model_object, TABLES
+from core.modelfactory import ModelFactory
+
 
 def test_create_or_update_item():
-    board_object = create_model_object("BOARD")
+    model_factory = ModelFactory()
+
+    board_object = model_factory.create_model_object("BOARD")
     board_object.board_name = "Test"
 
     # assert object doesn't exist

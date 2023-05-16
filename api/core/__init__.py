@@ -4,10 +4,11 @@ import yaml
 import json
 
 from .dbengine import DatabaseUtils
-from .modelfactory import create_model_object, TABLES
+from .modelfactory import ModelFactory
 
 allowed_origins = None
 db_utils = None
+model_factory = ModelFactory()
 
 def _create_response_object(data):
     response = jsonify(data)
@@ -38,7 +39,7 @@ def create_app():
         json_data = json.loads(request.json)
         board_name = escape(json_data["board_name"])
 
-        board = create_model_object("BOARD")
+        board = model_factory.create_model_object("BOARD")
         board.board_name = board_name
 
         result = db_utils.add(board)
