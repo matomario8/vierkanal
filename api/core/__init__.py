@@ -24,9 +24,35 @@ def create_app(config_path="./config.yml"):
 
     db_utils = DatabaseUtils(config["database"]["host"])
     db_utils.init_tables()
-    
 
     allowed_origins = config["api"]["allowed_origins"]
+
+        
+    def build_get_response(object_name, object_id):
+        response = {}
+        msg = ""
+        status = 500
+
+        if type(object_id) is not int:
+            msg = "Invalid value given for {} id".format(object_name)
+        else:
+            object_id = escape(object_id)
+            results = db_utils.get(model_factory.tables["BOARD"], 
+                model_factory.tables["BOARD"].board_id == board_id)
+            
+            try:
+                for i in range(len(results)):
+                    response[i] = results[i]
+            except IndexError:
+                msg = "No results found for given {} id".format(object_name)
+            except KeyError:
+                msg = "No results found for given {} id".format(object_name)
+
+        response["status"] = status
+        response["msg"] = msg
+        response["board_name"] = board_name
+
+        
 
     @app.route("/board/new", methods=["POST"])
     def create_board():
