@@ -30,9 +30,12 @@ class DatabaseUtils:
 
     def get(self, model, where=None):
 
+        result = []
+
         with Session(self.engine) as session:
             stmt = select(model).where(where)
-            result = session.scalars(stmt).one()
+            for obj in session.scalars(stmt):
+                result.append(obj)
             return result
             
 

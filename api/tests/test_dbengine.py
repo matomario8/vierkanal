@@ -29,19 +29,26 @@ def test_db_utils(config):
     model_object_id = 1
     model_object_name = "testobj123"
 
+    model_object_id2 = 2
+
     model_object = model_factory.create_model_object("MODELTEST")
+    model_object2 = model_factory.create_model_object("MODELTEST")
+
     model_object.name = model_object_name
     model_object.id = model_object_id
 
-    result = db_utils.add(model_object)
+    model_object2.name = model_object_name
+    model_object2.id = model_object_id2
 
+    result = db_utils.add(model_object)
+    assert False is not result["result"]
+
+    result = db_utils.add(model_object2)
     assert False is not result["result"]
 
     model_class = model_factory.tables["MODELTEST"]
-    
     queried_objects = db_utils.get(model_class, model_class.name.in_([model_object_name]))
 
-    assert queried_objects.name == model_object_name
+    assert queried_objects[0].name == model_object_name
+    assert queried_objects[1].name == model_object_name
 
-
-    #assert queried_object.name == model_object.name

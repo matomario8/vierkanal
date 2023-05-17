@@ -28,10 +28,6 @@ def create_app(config_path="./config.yml"):
 
     allowed_origins = config["api"]["allowed_origins"]
 
-    @app.route("/", methods=["GET"])
-    def hello_world():
-        return "API version 0.1"
-
     @app.route("/board/new", methods=["POST"])
     def create_board():
 
@@ -50,6 +46,32 @@ def create_app(config_path="./config.yml"):
         response = _create_response_object(result)
         return response
 
+    @app.route("/board/<int:board_id>", methods=["GET"])
+    def get_board(board_id):
+        response = {}
+        msg = ""
+        board_name = ""
+        status = 500
+
+        if type(board_id) is not int:
+            msg = "Invalid value for board id"
+        else:
+            board_id = escape(board_id)
+            result = db_utils.get(model_factory.tables["BOARD"], 
+                model_factory.tables["BOARD"].board_id == board_id)
+            
+            try:
+                board_name = result[0].board_name
+            except IndexError:
+                msg = "No results found for given board id"
+            except KeyError:
+                msg = "No results found for given board id"
+
+        response["status"] = status
+        response["msg"] = msg
+        response["board_name"] = board_name
+
+        return _create_response_object(response)
 
     @app.route("/board/<int:boardId>/reply/<int:replyId>", methods=["GET"])
     def get_reply():
