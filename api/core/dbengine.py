@@ -10,10 +10,10 @@ class DatabaseUtils:
     def __init__(self, dbhost: str):
         self.engine = create_engine(dbhost, echo=True)
 
-    def init_tables(self, Model=Base):
-        Model.metadata.create_all(self.engine)
+    def init_tables(self, model=Base):
+        model.metadata.create_all(self.engine)
     
-    def add(self, model_object: Base) -> bool:
+    def add(self, model_object) -> bool:
         """Adds the Base object to the db"""
         result = False
         msg = "Unable to get database session."
@@ -32,6 +32,7 @@ class DatabaseUtils:
 
         with Session(self.engine) as session:
             stmt = select(model).where(where)
-            return session.scalars(stmt)
+            result = session.scalars(stmt).one()
+            return result
             
 

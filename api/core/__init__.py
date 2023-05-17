@@ -15,16 +15,15 @@ def _create_response_object(data):
     response.headers.add("Access-Control-Allow-Origin", allowed_origins)
     return response
 
-def create_app():
+def create_app(config_path="./config.yml"):
 
     app = Flask("core")
 
-    with open("./config.yml", "r") as config_file:
+    with open(config_path, "r") as config_file:
         config = yaml.safe_load(config_file)
 
     db_utils = DatabaseUtils(config["database"]["host"])
     db_utils.init_tables()
-
     
 
     allowed_origins = config["api"]["allowed_origins"]

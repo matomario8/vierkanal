@@ -11,11 +11,11 @@ class ModelFactory:
 
     tables: dict
 
-    def __init__(self, *args, **kwargs):
-        if "tables_config" not in kwargs:
+    def __init__(self, tables_config=None):
+        if not tables_config:
             self.tables = TABLES
         else:
-            self.tables = kwargs["tables_config"]
+            self.tables = tables_config
 
     def create_model_object(self, table_name):
         if table_name not in self.tables.keys():
