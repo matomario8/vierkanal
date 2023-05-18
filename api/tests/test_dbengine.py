@@ -47,8 +47,9 @@ def test_db_utils(config):
     assert False is not result["result"]
 
     model_class = model_factory.tables["MODELTEST"]
-    queried_objects = db_utils.get(model_class, model_class.name.in_([model_object_name]))
+    queried_objects = db_utils.get(model_class, 
+                        model_class.name.in_([model_object_name]))
 
-    assert queried_objects[0].name == model_object_name
-    assert queried_objects[1].name == model_object_name
+    assert queried_objects["rows"][0].name == model_object_name
+    assert queried_objects["rows"][1].name == model_object_name
 

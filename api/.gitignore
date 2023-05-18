@@ -1,6 +1,7 @@
 pyvenv.cfg
 .pytest_cache
 /core/__pycache__
+/lib64
 __pycache__
 bin
 lib

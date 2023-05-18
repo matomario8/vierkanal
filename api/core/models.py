@@ -1,8 +1,8 @@
 from sqlalchemy import String, DateTime, ForeignKey
 from sqlalchemy.orm import DeclarativeBase, Mapped, mapped_column, relationship
+from sqlalchemy_serializer import SerializerMixin
 
-
-class Base(DeclarativeBase):
+class Base(DeclarativeBase, SerializerMixin):
     pass
 
 class Board(Base):

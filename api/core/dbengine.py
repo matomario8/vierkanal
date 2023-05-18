@@ -30,12 +30,23 @@ class DatabaseUtils:
 
     def get(self, model, where=None):
 
-        result = []
+        result = {
+            "errors": [],
+            "rows": []
+        }
 
         with Session(self.engine) as session:
-            stmt = select(model).where(where)
-            for obj in session.scalars(stmt):
-                result.append(obj)
-            return result
+            try:
+                stmt = select(model).where(where)
+            except:
+                result["errors"].append("Problem building the query.\
+                                         SELECT: {} WHERE {}".format(model, where))
+            try:
+                for obj in session.scalars(stmt):
+                    result["rows"].append(obj)
+            except:
+                result["errors"].append("Problem reading rows from database.")
+        
+        return result
             
 
