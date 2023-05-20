@@ -12,9 +12,10 @@ db_utils = None
 model_factory = ModelFactory()
 
 def _create_response_object(data):
+    status_code = data["status_code"]
     response = jsonify(data)
     response.headers.add("Access-Control-Allow-Origin", allowed_origins)
-    return response
+    return response, status_code
 
 def _validate_input(input, is_integer_expected=True):
     if is_integer_expected and type(input) is not int:
@@ -35,18 +36,17 @@ def create_app(config_path="./config.yml"):
 
     allowed_origins = config["api"]["allowed_origins"]
 
-    def _make_get_request(model, where):
+    def _handle_get_request(model, where):
         """
         model - the model class that extends DeclarativeBase
         where - premade where clause that should reference the same table as model
         """
         response = {
             "msg": "",
-            "status": 200,
+            "status_code": 200,
             "data": [],
         }
 
-        
         result = db_utils.get(model, where)
         if len(result["errors"]) == 0:
             if len(result["rows"]) == 0:
@@ -58,32 +58,39 @@ def create_app(config_path="./config.yml"):
             #Log the errors here
             for error in result["errors"]:
                 print(error)
-            response["status"] = 500
+            response["status_code"] = 500
             response["msg"] = "An internal error occurred while processing the request."
-        print(response)
+
         return _create_response_object(response)
 
 
-    def _make_post_request(model, where):
+    def _handle_post_request(model):
         """
         model - the model class that extends DeclarativeBase
-        where - premade where clause that should reference the same table as model
         """
+
+        # Change to "data" for naming consistency with _create_response_object()
         response = {
             "msg": "",
-            "status": 200,
-            "data": {},
+            "status_code": 200
         }
 
-        try:
-            rows = db_utils.get(model, where)
-            if len(rows == 0):
-                response["msg"] = "No results found for given input."
-            else:
-                response["data"] = rows
-        except:
-            response["status"] = 500
-            response["msg"] = "An internal error occurred while processing the request."
+        json_data = json.loads(request.json)
+
+        model_object = model_factory.create_model_object(model)
+
+        for key in json_data.keys():
+            # IntExpected flag won't always fit for multiple keys
+            model_object.key = _validate_input(json_data[key], False)
+
+
+        result = db_utils.add(model_object)
+        if result["success"] == True:
+            response["status_code"] = 200
+        else:
+            response["status_code"] = 500
+            for error in result["errors"]:
+                response["msg"] += error + "\n"
 
         return _create_response_object(response)
 
@@ -91,25 +98,9 @@ def create_app(config_path="./config.yml"):
     @app.route("/board/new", methods=["POST"])
     def create_board():
 
-        json_data = json.loads(request.json)
+        model = "BOARD"
+        response = _handle_post_request(model)
 
-        try:
-            board_name = escape(json_data["board_name"])
-        except KeyError:
-            raise KeyError("No board name was given.")
-
-        board = model_factory.create_model_object("BOARD")
-        board.board_name = board_name
-
-        result = db_utils.add(board)
-        if result["result"] == True:
-            result["status_code"] = 200
-        else:
-            result["status_code"] = 500
-        result["result"] = None
-
-        response = _create_response_object(result)
-        print(result)
         return response
 
     @app.route("/board/<int:board_id>", methods=["GET"])
@@ -119,9 +110,13 @@ def create_app(config_path="./config.yml"):
         model = model_factory.tables["BOARD"]
         where = model.board_id == board_id
 
-        response = _make_get_request(model, where)
+        response = _handle_get_request(model, where)
 
         return response
+    
+    @app.route("/board/<int:board_id>/thread/<int:thread_id>/reply/new")
+    def create_reply():
+        pass
 
     @app.route("/board/<int:boardId>/reply/<int:replyId>", methods=["GET"])
     def get_reply():
@@ -136,8 +131,7 @@ def create_app(config_path="./config.yml"):
         replies = []
         return _create_response_object(replies)
 
-    def create_reply():
-        pass
+
     def delete_reply():
         pass
 

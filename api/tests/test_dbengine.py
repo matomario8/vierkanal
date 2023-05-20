@@ -1,13 +1,14 @@
 import pytest
 import yaml
 
-from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped
 from sqlalchemy import String
+from sqlalchemy.orm import DeclarativeBase, mapped_column, Mapped
+from sqlalchemy_serializer import SerializerMixin
 
 from core.dbengine import DatabaseUtils
 from core.modelfactory import ModelFactory
 
-class ModelTestBase(DeclarativeBase):
+class ModelTestBase(DeclarativeBase, SerializerMixin):
     pass
 
 class ModelTest(ModelTestBase):
@@ -41,10 +42,10 @@ def test_db_utils(config):
     model_object2.id = model_object_id2
 
     result = db_utils.add(model_object)
-    assert False is not result["result"]
+    assert False is not result["success"]
 
     result = db_utils.add(model_object2)
-    assert False is not result["result"]
+    assert False is not result["success"]
 
     model_class = model_factory.tables["MODELTEST"]
     queried_objects = db_utils.get(model_class, 

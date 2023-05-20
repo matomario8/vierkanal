@@ -13,20 +13,26 @@ class DatabaseUtils:
     def init_tables(self, model=Base):
         model.metadata.create_all(self.engine)
     
-    def add(self, model_object) -> bool:
-        """Adds the Base object to the db"""
-        result = False
-        msg = "Unable to get database session."
+    def add(self, model_object: DeclarativeBase) -> bool:
+        """Adds an object of type DeclarativeBase to the db"""
+        result = {
+            "success": False, 
+            "errors": []
+        }
+
+        # Put this into the log
+        print("Adding the following to the db")
+        print(model_object.to_dict())
+
         with Session(self.engine) as session:
             try:
                 session.add(model_object)
                 session.commit()
-                result = True
-                msg = "Successfully added item into the database."
+                result["success"] = True
             except:
-                msg = "Could not add the item to the database."
+                result["errors"].append("Could not add object into database.")
             
-        return { "result": result, "msg": msg }
+        return result
 
     def get(self, model, where=None):
 

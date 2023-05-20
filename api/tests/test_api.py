@@ -3,7 +3,7 @@ import pytest
 def test_create_board(client):
     json = '{"board_name": "test"}'
     response = client.post("/board/new", json=json)
-
+    print(response.json["msg"])
     assert 200 == response.status_code
 
 def test_get_board(client):
