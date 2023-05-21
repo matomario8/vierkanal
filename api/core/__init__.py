@@ -17,12 +17,8 @@ def _create_response_object(data):
     response.headers.add("Access-Control-Allow-Origin", allowed_origins)
     return response, status_code
 
-def _validate_input(input, is_integer_expected=True):
-    if is_integer_expected and type(input) is not int:
-        raise ValueError("Integer is expected")
-    else:
-        input = escape(input)
-    return input
+def _validate_input(input):
+    return escape(input)
 
 def create_app(config_path="./config.yml"):
 
@@ -80,8 +76,7 @@ def create_app(config_path="./config.yml"):
         model_object = model_factory.create_model_object(model)
 
         for key in json_data.keys():
-            # IntExpected flag won't always fit for multiple keys
-            model_object.key = _validate_input(json_data[key], False)
+            model_object.__dict__[key] = _validate_input(json_data[key])
 
 
         result = db_utils.add(model_object)
@@ -114,14 +109,23 @@ def create_app(config_path="./config.yml"):
 
         return response
     
-    @app.route("/board/<int:board_id>/thread/<int:thread_id>/reply/new")
+    @app.route("/board/<int:board_id>/thread/<int:thread_id>/reply/new", methods=["POST"])
     def create_reply():
-        pass
+        model = "REPLY"
+        response = _handle_post_request(model)
+        return response
 
     @app.route("/board/<int:boardId>/reply/<int:replyId>", methods=["GET"])
     def get_reply():
-        reply = {}
-        return _create_response_object(reply)
+        model = "REPLY"
+        board_id = _validate_input(board_id)
+
+        model = model_factory.tables["BOARD"]
+        where = model.board_id == board_id
+
+        response = _handle_get_request(model, where)
+
+        return response
 
     @app.route("/board/<int:boardId>/thread/<int:threadId>/replies", methods=["GET"])
     def get_replies():
@@ -144,7 +148,7 @@ def create_app(config_path="./config.yml"):
         return _create_response_object(thread)
 
 
-    @app.route("/board/<int:boardid>/threads", methods=["GET"])
+    @app.route("/board/<int:boardid>/thread/getall", methods=["GET"])
     def get_threads():
         """
         Get all threads in board
@@ -152,10 +156,26 @@ def create_app(config_path="./config.yml"):
         threads = []
         return _create_response_object(threads)
 
-    def create_thread():
-        pass
+    @app.route("/board/<string:board_name>/thread/new", methods=["POST"])
+    def create_thread(board_name):
+        json_data = json.loads(request.json)
+        #need to add post id from PostIdTracker here
+        model = "THREAD"
+        response = _handle_post_request(model)
+        return response
+
     def delete_thread():
         pass
+
+    @app.route("/board/<string:board_name>/getnextid", methods=["GET"])
+    def get_next_post_id():
+        next_post_id = 1
+        return next_post_id
+
+    @app.route("/board/<string:board_name>/updatenextid", methods=["PUT"])
+    def update_next_post_id():
+        pass
+
 
     return app
 
