@@ -1,4 +1,4 @@
-from sqlalchemy import create_engine, Engine, select
+from sqlalchemy import create_engine, Engine, select, update
 from sqlalchemy.orm import Session
 
 from .models import *
@@ -37,8 +37,8 @@ class DatabaseUtils:
     def get(self, model, where=None):
 
         result = {
-            "errors": [],
-            "rows": []
+            "rows": [],
+            "errors": []
         }
 
         with Session(self.engine) as session:
@@ -54,5 +54,27 @@ class DatabaseUtils:
                 result["errors"].append("Problem reading rows from database.")
         
         return result
+
+    def update(self, model, where, **kwargs):
+        result = {
+            "success": False, 
+            "errors": []
+        }
+
+        with Session(self.engine) as session:
+            try:
+
+
+                stmt = update(model).where(where).values(kwargs)
+
+                session.execute(stmt)
+                session.commit()
+                result["success"] = True
+            except:
+                result["errors"].append("Unable to update object in database.")
+        
+        return result
+            
+
             
 

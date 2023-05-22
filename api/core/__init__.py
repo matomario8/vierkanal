@@ -32,6 +32,17 @@ def create_app(config_path="./config.yml"):
 
     allowed_origins = config["api"]["allowed_origins"]
 
+    def _create_new_board_handler(board_id, board_name):
+        board_object = model_factory.create_model_object("BOARD")
+        board_object.board_id = board_id
+        board_object.board_name = board_name
+        db_utils.add(board_object)
+
+        post_id_tracker_object = model_factory.create_model_object("POSTIDTRACKER")
+        post_id_tracker_object.board_id = board_id
+        post_id_tracker_object.next_post_id = 1
+        db_utils.add(post_id_tracker_object)
+
     def _handle_get_request(model, where):
         """
         model - the model class that extends DeclarativeBase
@@ -59,6 +70,13 @@ def create_app(config_path="./config.yml"):
 
         return _create_response_object(response)
 
+    def _handle_500(message):
+        response = {
+            "msg": message,
+            "status_code": 200
+        }
+        return _create_response_object(response)
+        
 
     def _handle_post_request(model):
         """
@@ -98,11 +116,11 @@ def create_app(config_path="./config.yml"):
 
         return response
 
-    @app.route("/board/<int:board_id>", methods=["GET"])
+    @app.route("/board/<string:board_id>", methods=["GET"])
     def get_board(board_id):
 
         board_id = _validate_input(board_id)
-        model = model_factory.tables["BOARD"]
+        model = model_factory.get("BOARD")
         where = model.board_id == board_id
 
         response = _handle_get_request(model, where)
@@ -139,7 +157,7 @@ def create_app(config_path="./config.yml"):
     def delete_reply():
         pass
 
-    @app.route("/board/<int:boardId>/thread/<int:threadId>", methods=["GET"])
+    @app.route("/board/<string:board_name>/thread/<int:threadId>", methods=["GET"])
     def get_thread():
         """
         Get a thread in a board
@@ -148,7 +166,7 @@ def create_app(config_path="./config.yml"):
         return _create_response_object(thread)
 
 
-    @app.route("/board/<int:boardid>/thread/getall", methods=["GET"])
+    @app.route("/board/<string:board_name>/thread/getall", methods=["GET"])
     def get_threads():
         """
         Get all threads in board
@@ -156,12 +174,32 @@ def create_app(config_path="./config.yml"):
         threads = []
         return _create_response_object(threads)
 
-    @app.route("/board/<string:board_name>/thread/new", methods=["POST"])
-    def create_thread(board_name):
-        json_data = json.loads(request.json)
-        #need to add post id from PostIdTracker here
-        model = "THREAD"
-        response = _handle_post_request(model)
+    @app.route("/board/<string:board_id>/newthread", methods=["POST"])
+    def create_thread(board_id):
+
+        post_id_tracker = model_factory.get("POSTIDTRACKER")
+        result = db_utils.get(post_id_tracker, post_id_tracker.board_id == board_id)
+
+        if len(result["rows"]) == 0:
+            message = ""
+            for msg in result["errors"]:
+                message += msg + "\n"
+            response = _handle_500(message)
+        else:
+            next_post_id = result["rows"][0]["next_post_id"]
+            result = db_utils.update(post_id_tracker, post_id_tracker.board_id == board_id, 
+                                next_post_id=post_id_tracker.next_post_id + 1)
+            if result["success"] is not False:
+                json_data = json.loads(request.json)
+                json_data["post_id"] = next_post_id
+
+                model = "THREAD"
+                response = _handle_post_request(model)
+            else:
+                message = ""
+                for msg in result["errors"]:
+                    message += msg + "\n"
+                response = _handle_500(message)
         return response
 
     def delete_thread():
@@ -172,10 +210,13 @@ def create_app(config_path="./config.yml"):
         next_post_id = 1
         return next_post_id
 
-    @app.route("/board/<string:board_name>/updatenextid", methods=["PUT"])
-    def update_next_post_id():
-        pass
-
+    def init_boards(boards=None) -> None:
+        if boards is None:
+            _create_new_board_handler("g", "Technology")
+            _create_new_board_handler("sp", "Sports")
+        else:
+            for board in boards:
+                _create_new_board_handler(board.board_id, board.board_name)
 
     return app
 

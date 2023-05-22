@@ -2,23 +2,34 @@ import pytest
 import json as jsonlib
 
 def test_create_board(client):
-    json = '{"board_name": "test"}'
+    data = {
+        "board_id": "g",
+        "board_name": "technology"
+    }
+    json = jsonlib.dumps(data)
     response = client.post("/board/new", json=json)
     assert 200 == response.status_code
 
 def test_get_board(client):
-    json = '{"board_name": "test"}'
+    data = {
+        "board_id": "g",
+        "board_name": "technology"
+    }
+    json = jsonlib.dumps(data)
     response = client.post("/board/new", json=json)
     assert 200 == response.status_code
 
-    response = client.get("/board/1")
+    response = client.get("/board/g")
     assert 200 == response.status_code
-    assert "test" == response.json["data"][0]["board_name"]
+    assert "g" == response.json["data"][0]["board_id"]
+    assert "technology" == response.json["data"][0]["board_name"]
 
 def test_create_thread(client):
 
+    board_id = "t"
     board_name = "test"
     data = {
+        "board_id": board_id,
         "board_name": board_name
     }
     json = jsonlib.dumps(data)
@@ -34,7 +45,7 @@ def test_create_thread(client):
     }
     json = jsonlib.dumps(data)
 
-    url = "/board/" + board_name + "/thread/new"
+    url = "/board/" + board_name + "/newthread"
     
     response = client.post(url, json=json)
     assert 200 == response.status_code
