@@ -3,4 +3,4 @@ flask
 sqlalchemy
 pyyaml
 markupsafe
-flask-serialize
+sqlalchemy_serializer

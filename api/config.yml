@@ -2,6 +2,11 @@ api:
   allowed_origins: http://127.0.0.1:3000
 database:
   host: "sqlite:///project.db"
-  tables: 
-    "USER": User
-    
+  boards: 
+    technology: 
+      board_id: "g"
+      board_name: "Technology" 
+    sports: 
+      board_id: "sp"
+      board_name: "Sports"
+

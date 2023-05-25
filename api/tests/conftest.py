@@ -3,12 +3,13 @@ import yaml
 from flask import Flask, current_app
 
 from core import create_app
+from core.config import Config
 
 test_config_path = "./tests/configtest.yml"
 
 @pytest.fixture()
 def app():
-    app = create_app(test_config_path)
+    app = create_app()
     app.config.update({"TESTING": True})
     yield app
 
@@ -18,7 +19,5 @@ def client(app):
 
 @pytest.fixture()
 def config():
-    with open(test_config_path) as config_file:
-        config = yaml.safe_load(config_file)
-
+    Config.register_config(cls, test_config_path)
     return config

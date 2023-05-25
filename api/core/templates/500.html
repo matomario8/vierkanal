@@ -1,0 +1,9 @@
+{% extends 'base.html' %}
+
+{% block header %}
+  <h1>{% block title %}500 Internal Server Error{% endblock %}</h1>
+{% endblock %}
+
+{% block content %}
+  <p>Something went wrong on the server side.  See the logs for details.</p>
+{% endblock %}
