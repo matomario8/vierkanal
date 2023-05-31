@@ -19,5 +19,5 @@ def client(app):
 
 @pytest.fixture()
 def config():
-    Config.register_config(cls, test_config_path)
-    return config
+    Config.register_config(test_config_path)
+    return Config.get()

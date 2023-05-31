@@ -15,8 +15,8 @@ db_utils = None
 model_factory = ModelFactory()
 
 
-if Config.CONFIG is None:
-    Config.register_config("")
+if Config.get() is None:
+    Config.register_config("./config.yml")
     db_utils = DatabaseUtils(Config.CONFIG["database"]["host"])
     db_utils.init_tables()
     allowed_origins.append(Config.CONFIG["api"]["allowed_origins"])
@@ -28,7 +28,8 @@ Helper methods
 
 def _init_boards(boards: dict) -> None:
     for board in boards:
-        _create_new_board_handler(board["board_id"], board["board_name"])
+        _create_new_board_handler(boards[board]["board_id"], 
+                                boards[board]["board_name"])
 
 def _create_response_object(data):
     status_code = data["status_code"]
@@ -129,7 +130,6 @@ def create_board():
 
     model = "BOARD"
     response = _handle_post_request(model)
-
     return response
 
 @imgboard.route("/board/<string:board_id>", methods=["GET"])
