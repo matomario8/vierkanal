@@ -1,20 +1,37 @@
+from flask import g, current_app
 from sqlalchemy import create_engine, Engine, select, update
 from sqlalchemy.orm import Session
 
-from .models import *
+from models import *
 
-class DatabaseUtils:
+db_engine = None
+
+def init_database_engine(db_host, model=Base):
+    db_engine = DatabaseEngine(db_host)
+    db_engine.init_tables(model)
+
+def get_connection():
+    if "db_connection" not in g:
+        g.db_connection = db_engine.create_connection()
+    return g.db_connection
+
+class DatabaseEngine:
+    """Functions to initialize and run queries on the database"""
 
     engine: Engine
 
-    def __init__(self, dbhost: str):
-        self.engine = create_engine(dbhost, echo=True)
+    def __init__(self, db_host: str):
+        self.engine = create_engine(db_host, echo=True)
 
     def init_tables(self, model=Base):
         model.metadata.create_all(self.engine)
     
+    def create_connection(self):
+        return engine.connect()
+
     def add(self, model_object: DeclarativeBase) -> bool:
         """Adds an object of type DeclarativeBase to the db"""
+
         result = {
             "success": False, 
             "errors": []
@@ -63,8 +80,6 @@ class DatabaseUtils:
 
         with Session(self.engine) as session:
             try:
-
-
                 stmt = update(model).where(where).values(kwargs)
 
                 session.execute(stmt)
