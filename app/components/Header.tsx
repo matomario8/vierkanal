@@ -5,7 +5,6 @@ type HeaderProps = {
     imgUrl: string;
 };
 
-
 const HeaderArt = (imgUrl: string) => {
 
     if (imgUrl && imgUrl !== "") {
