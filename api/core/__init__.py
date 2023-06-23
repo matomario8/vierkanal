@@ -1,9 +1,9 @@
 from flask import Flask, Blueprint, jsonify, request, current_app, abort, render_template, g
-
-from config import Config
-from dbengine import *
-from modelfactory import ModelFactory
 from markupsafe import escape
+
+from .config import Config
+from .dbengine import *
+from .modelfactory import ModelFactory
 
 import yaml
 import json
@@ -12,9 +12,9 @@ def create_app(config_path):
 
     app = Flask("core")
     app.config = Config(config_path)
-    init_database_engine(app.config.get_db_host())
+    init_database_engine(app)
 
-    init_boards(app.config.get()["database"]["boards"])
+    model_factory = ModelFactory()
 
     """
     Helper methods
@@ -34,15 +34,16 @@ def create_app(config_path):
         return escape(input)
 
     def _create_new_board_handler(board_id, board_name):
+        database = get_connection()
         board_object = model_factory.create_model_object("BOARD")
         board_object.board_id = board_id
         board_object.board_name = board_name
-        db_utils.add(board_object)
+        database.add(board_object)
 
         post_id_tracker_object = model_factory.create_model_object("POSTIDTRACKER")
         post_id_tracker_object.board_id = board_id
         post_id_tracker_object.next_post_id = 1
-        db_utils.add(post_id_tracker_object)
+        database.add(post_id_tracker_object)
 
     def _handle_get_request(model, where):
         """
@@ -226,6 +227,8 @@ def create_app(config_path):
     @app.route("/board/<string:board_name>/getnextid", methods=["GET"])
     def get_next_post_id():
         pass
+
+    _init_boards(app.config.get()["database"]["boards"])
 
     return app
 

@@ -2,13 +2,17 @@ from flask import g, current_app
 from sqlalchemy import create_engine, Engine, select, update
 from sqlalchemy.orm import Session
 
-from models import *
+from core.models import *
 
 db_engine = None
+app = None
 
-def init_database_engine(db_host, model=Base):
-    db_engine = DatabaseEngine(db_host)
-    db_engine.init_tables(model)
+def init_database_engine(app, model=Base):
+    global db_engine
+    if not db_engine:
+        db_engine = DatabaseEngine(app.config.get_db_host())
+        db_engine.init_tables(model)
+    return db_engine
 
 def get_connection():
     if "db_connection" not in g:
