@@ -5,17 +5,19 @@ import { useState } from 'react'
 
 const inter = Inter({ subsets: ['latin'] })
 
-const [board, setBoard] = useState("")
+
 
 const Home = () => {
+  const [board, setBoard] = useState("");
+
   return (
     <main
       className={`flex min-h-screen flex-col items-center p-24 ${inter.className}`}
     >
       
-      <Header title="Technology" imgUrl="/assets/bildschirmfoto.png"></Header>
+      <Header title="Home" imgUrl="/assets/bildschirmfoto.png"></Header>
 
-      <Link href="/technology">/g/</Link>
+      <Link href="/catalog">/g/</Link>
       
     </main>
   )
