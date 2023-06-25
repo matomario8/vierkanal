@@ -46,7 +46,7 @@ const Catalog = () => {
 
 	return (
 		<main
-			className={`flex min-h-screen flex-col p-24 ${inter.className}`}
+			className={`flex min-h-screen flex-col p-4 md:p-24 ${inter.className}`}
 		>
 			<div className={"self-center"}>
 				<Header title="Technology" imgUrl="/assets/bildschirmfoto.png"></Header>
