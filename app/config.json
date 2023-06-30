@@ -3,7 +3,8 @@
         "URL": "http://localhost:5000",
         "ENDPOINTS": {
             "THREADS": {
-                "GET_ALL": "/threads"
+                "GET_ALL": "/threads",
+                "SUBMIT": "/threads/new"
             }
         }
     }

@@ -1,3 +1,4 @@
+import config from "@/config.json";
 import { useState } from 'react'
 
 const ThreadForm = () => {
@@ -5,8 +6,23 @@ const ThreadForm = () => {
 	const [threadTitle, setThreadTitle] = useState<string>("");
 	const [threadBody, setThreadBody] = useState<string>("");
 
+	const newThreadUrl = config.FLASK_API.URL + config.FLASK_API.ENDPOINTS.THREADS.SUBMIT;
+
+	const submitThread = async () => {
+		let postData = {"title": threadTitle, "body": threadBody};
+
+		const response = await fetch(newThreadUrl, {
+			method: "POST", 
+			headers: {
+			  "Content-Type": "application/json",
+			},
+			body: JSON.stringify(postData), 
+		  });
+		  return response.json()
+	}
+
 	return (
-		<div className="w-full my-8">
+		<form className="w-full my-8">
 			<h1 className="text-2xl font-semibold mb-4">
 				New Thread
 			</h1>
@@ -35,9 +51,13 @@ const ThreadForm = () => {
 				onChange={e => setThreadBody(e.target.value)}
 				value={threadBody}
 			>
-			</textarea><br />
-			<button className="bg-blue-800 hover:bg-blue-700 text-white font-bold py-1 px-4 rounded">Submit</button>
-		</div>
+			</textarea>
+			<button
+				onClick={submitThread}
+				className="bg-blue-800 hover:bg-blue-700 text-white font-bold py-1 px-4 rounded">
+				Submit
+			</button>
+		</form>
 	)
 
 }
